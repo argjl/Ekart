@@ -60,7 +60,9 @@ public class SellerDashboardController {
 		if (principal instanceof UserDetails) {
 			String username = ((UserDetails) principal).getUsername();
 			Seller seller = sellerDashboardService.findSellerByUsername(username); // Implement a method to find seller
-																					// by username
+			logger.info("Product Details: {}", username); // by username
+			logger.info("Seller Details: shopName={}, shopAddress={}, email={}, phoneNumber={}", seller.getShopName(),
+					seller.getShopAddress(), seller.getEmailSeller(), seller.getPhoneNumberSeller());
 			List<Product> products = productService.getProductsBySellerId(seller.getId());
 			List<ProductDTO> productdtos = products.stream().map(ProductMapper::toDTO).collect(Collectors.toList());
 			logger.info("Product Details: {}", productdtos);

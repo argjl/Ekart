@@ -1,8 +1,11 @@
 package com.ekart.springekartapplication.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ekart.springekartapplication.Controller.SellerDashboardController;
 import com.ekart.springekartapplication.DTO.ProductDTO;
 import com.ekart.springekartapplication.Entity.Order;
 import com.ekart.springekartapplication.Entity.Product;
@@ -24,6 +27,8 @@ import javax.transaction.Transactional;
 
 @Service
 public class SellerDashboardService {
+
+	Logger logger = LoggerFactory.getLogger(SellerDashboardService.class);
 
 	@Autowired
 	private ProductRepository productRepository;
