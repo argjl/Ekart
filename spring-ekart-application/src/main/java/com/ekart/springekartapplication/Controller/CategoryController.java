@@ -15,16 +15,16 @@ import com.ekart.springekartapplication.Service.CategoryService;
 @RestController
 @RequestMapping("/category")
 public class CategoryController {
-	
+
 	@Autowired
 	private CategoryService categoryService;
-	
-	@GetMapping
-	public List<Category> getCategories(){
+
+	@GetMapping("/viewCategory")
+	public List<Category> getCategories() {
 		return categoryService.getAllCategories();
 	}
-	
-	@PostMapping
+
+	@PostMapping("/addCategory")
 	public Category addCategory(@RequestBody Category category) {
 		return categoryService.addCategory(category);
 	}

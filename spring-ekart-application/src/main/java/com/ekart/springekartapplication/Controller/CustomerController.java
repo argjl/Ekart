@@ -13,12 +13,12 @@ import com.ekart.springekartapplication.Service.ProductService;
 @RestController
 @RequestMapping("/customer")
 public class CustomerController {
-	
+
 	@Autowired
 	private ProductService productService;
-	
+
 	@GetMapping("/products")
-	public List<Product> getProducts(){
+	public List<Product> getProducts() {
 		return productService.getAllProducts();
 	}
 

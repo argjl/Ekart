@@ -1,6 +1,5 @@
 package com.ekart.springekartapplication.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -23,41 +22,63 @@ import com.ekart.springekartapplication.Repository.SellerRepository;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
+	Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
-    @Autowired
-    private SellerRepository sellerRepository;
-    
-    @Autowired
-    private CustomerRepository customerRepository; // Assuming you have a CustomerRepository
+	@Autowired
+	private SellerRepository sellerRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Check for Seller
-        Optional<Seller> sellerOptional = sellerRepository.findByUsername(username);
-        if (sellerOptional.isPresent()) {
-            Seller seller = sellerOptional.get();
-            logger.info("Seller found: {} with password: {}", username, seller.getPassword());
-            return new org.springframework.security.core.userdetails.User(seller.getUsername(), seller.getPassword(), getAuthorities(seller));
-        }
-        
-        // Check for Customer
-        Optional<Customer> customerOptional = customerRepository.findByUsername(username); // Adjust method as needed
-        if (customerOptional.isPresent()) {
-            Customer customer = customerOptional.get();
-            logger.info("Customer found: {} with password: {}", username, customer.getPassword());
-            return new org.springframework.security.core.userdetails.User(customer.getUsername(), customer.getPassword(), getAuthorities(customer));
-        }
+	@Autowired
+	private CustomerRepository customerRepository; // Assuming you have a CustomerRepository
 
-        logger.warn("User not found: {}", username);
-        throw new UsernameNotFoundException("User not found with username: " + username);
-    }
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		// Check for Seller
+		Optional<Seller> sellerOptional = sellerRepository.findByUsername(username);
+		if (sellerOptional.isPresent()) {
+			Seller seller = sellerOptional.get();
+			logger.info("Seller found: {} with password: {}", username, seller.getPassword());
+			return new org.springframework.security.core.userdetails.User(seller.getUsername(), seller.getPassword(),
+					getAuthorities(seller));
+		}
 
-    private Collection<? extends GrantedAuthority> getAuthorities(Seller seller) {
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_SELLER")); // Seller role
-    }
-    
-    private Collection<? extends GrantedAuthority> getAuthorities(Customer customer) {
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_CUSTOMER")); // Customer role
-    }
+		// Check for Customer
+		Optional<Customer> customerOptional = customerRepository.findByUsername(username); // Adjust method as needed
+		if (customerOptional.isPresent()) {
+			Customer customer = customerOptional.get();
+			logger.info("Customer found: {} with password: {}", username, customer.getPassword());
+			return new org.springframework.security.core.userdetails.User(customer.getUsername(),
+					customer.getPassword(), getAuthorities(customer));
+		}
+
+		logger.warn("User not found: {}", username);
+		throw new UsernameNotFoundException("User not found with username: " + username);
+	}
+
+	private Collection<? extends GrantedAuthority> getAuthorities(Seller seller) {
+		return Collections.singleton(new SimpleGrantedAuthority("ROLE_SELLER")); // Seller role
+	}
+
+	private Collection<? extends GrantedAuthority> getAuthorities(Customer customer) {
+		return Collections.singleton(new SimpleGrantedAuthority("ROLE_CUSTOMER")); // Customer role
+	}
 }
+
+//@Service
+//public class CustomUserDetailsService implements UserDetailsService {
+//
+//    @Autowired
+//    private SellerRepository sellerRepository; // Or the appropriate repository
+//
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//    	Optional<Seller> seller = sellerRepository.findByUsername(username); // Fetch seller by username
+//        if (seller == null) {
+//            throw new UsernameNotFoundException("User not found");
+//        }
+//        return new org.springframework.security.core.userdetails.User(seller.get().getUsername(), seller.get().getPassword(), getAuthorities(seller.get()));
+//    }
+//
+//    private Collection<? extends GrantedAuthority> getAuthorities(Seller seller) {
+//        return Collections.singleton(new SimpleGrantedAuthority("ROLE_SELLER")); // Add the role as needed
+//    }
+//}

@@ -27,8 +27,5 @@ public class User {
 	private String username;
 	private String password;
 	private String role;
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 }

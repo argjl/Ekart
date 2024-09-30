@@ -10,6 +10,6 @@ import com.ekart.springekartapplication.Entity.Seller;
 @Repository
 public interface SellerRepository extends JpaRepository<Seller, Long> {
 
-	Optional<Seller> findByUsername(String username);
+	public Optional<Seller> findByUsername(String username);
 
 }

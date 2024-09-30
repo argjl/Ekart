@@ -37,7 +37,7 @@ public class ProductService {
 	public Product addProduct(Product product) {
 		// Validate the Product Details
 		validateProduct(product);
-		logger.info("entered validat");
+		logger.info("entered validate");
 
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -45,23 +45,22 @@ public class ProductService {
 		if (principal instanceof UserDetails) {
 			username = ((UserDetails) principal).getUsername();
 		} else {
-			username = principal.toString();
+			username = principal.toString();}
 
 			// Check if the seller exists
-			Optional<Seller> sellerOptional = sellerRepository.findById(product.getSeller().getId());
-
-			if (!sellerOptional.isPresent()) {
-				throw new SellerNotFoundException(product.getSeller().getId());
-			}
+			
 			// Save and return the Product
-		}
+		
 		Optional<Seller> existingSeller = sellerRepository.findByUsername(username);// Assuming Seller is Logged in
-		if (existingSeller == null) {
+		logger.info(username);
+		logger.info(existingSeller.get().getId().toString());
+		if (!existingSeller.isPresent()) {
 			throw new RuntimeException("Seller not found");
 		}
 		Seller seller = existingSeller.get();
 		product.setSeller(seller);
-		System.out.println("Product is added !");
+		logger.info("Product is added !");
+		logger.info(product.toString());
 		return productRepository.save(product);
 	}
 

@@ -9,6 +9,7 @@ import lombok.Data;
 @Table(name = "customers")
 @Data
 public class Customer extends User {
+
 	private String address;
 	private String emailCustomer;
 	private Long phoneNumberCustomer;

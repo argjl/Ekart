@@ -12,6 +12,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +25,13 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class Cart {
 
-
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@OneToOne
 	@JoinColumn(name = "customer_id")
+	@JsonManagedReference
 	private Customer customer;
 
 	@OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)

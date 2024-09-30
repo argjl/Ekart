@@ -45,7 +45,7 @@ public class AuthController {
             logger.info("Authentication successful for user: {}", authRequest.getUsername());
             // Load user details
             UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
-
+            logger.info("User roles: {}", userDetails.getAuthorities());
             // Generate JWT token
             String token = jwtTokenUtil.generateToken(userDetails);
 
