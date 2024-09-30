@@ -2,6 +2,7 @@ package com.ekart.springekartapplication.Controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ekart.springekartapplication.Entity.Product;
 import com.ekart.springekartapplication.Entity.Seller;
+import com.ekart.springekartapplication.Mapper.ProductMapper;
 import com.ekart.springekartapplication.Repository.SellerRepository;
+import com.ekart.springekartapplication.DTO.ProductDTO;
 import com.ekart.springekartapplication.Entity.Order;
 import com.ekart.springekartapplication.Service.ProductService;
 import com.ekart.springekartapplication.Service.SellerDashboardService;
@@ -39,8 +42,7 @@ public class SellerDashboardController {
 
 	@Autowired
 	private ProductService productService;
-	
-	
+
 	@Autowired
 	private SellerRepository sellerRepository;
 
@@ -51,17 +53,18 @@ public class SellerDashboardController {
 	 * @return the list of products added by the seller
 	 */
 	@GetMapping("/products")
-	public ResponseEntity<List<Product>> getSellerProducts() {
+	public ResponseEntity<List<ProductDTO>> getSellerProducts() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object principal = authentication.getPrincipal();
-		logger.info("Entered the /Products API");
+		logger.info("Entered the Products API");
 		if (principal instanceof UserDetails) {
 			String username = ((UserDetails) principal).getUsername();
 			Seller seller = sellerDashboardService.findSellerByUsername(username); // Implement a method to find seller
 																					// by username
 			List<Product> products = productService.getProductsBySellerId(seller.getId());
-			logger.info("Product Details: {}", products);
-			return ResponseEntity.ok(products);
+			List<ProductDTO> productdtos = products.stream().map(ProductMapper::toDTO).collect(Collectors.toList());
+			logger.info("Product Details: {}", productdtos);
+			return ResponseEntity.ok(productdtos);
 
 		}
 		logger.info("Unauthorized access attempt.");
@@ -76,11 +79,14 @@ public class SellerDashboardController {
 	 * @return the added or updated product
 	 */
 	@PostMapping("/addOrUpdateProduct")
-	public ResponseEntity<Product> addOrUpdateProduct(@RequestBody Product product, Authentication authentication) {
+	public ResponseEntity<ProductDTO> addOrUpdateProduct(@RequestBody ProductDTO productDTO,
+			Authentication authentication) {
 		Seller seller = (Seller) authentication.getPrincipal(); // Assuming seller is logged in
+		Product product = ProductMapper.toEntity(productDTO);
 		product.setSeller(seller); // Set the seller as the owner of the product
 		Product savedProduct = sellerDashboardService.addOrUpdateProduct(product);
-		return ResponseEntity.ok(savedProduct);
+		ProductDTO savedProductdto = ProductMapper.toDTO(savedProduct);
+		return ResponseEntity.ok(savedProductdto);
 	}
 
 	/**
@@ -91,26 +97,26 @@ public class SellerDashboardController {
 	 */
 	@GetMapping("/orders")
 	public ResponseEntity<List<Order>> getSellerOrders() {
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    
-	    // Check if the user is authenticated and of the right type
-	    if (authentication != null && authentication.isAuthenticated()) {
-	        Object principal = authentication.getPrincipal();
-	        
-	        if (principal instanceof UserDetails) {
-	            UserDetails userDetails = (UserDetails) principal;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-	            // Assuming you have a way to fetch a Seller by username or other attributes
-	            Optional<Seller> sellerOptional = sellerRepository.findByUsername(userDetails.getUsername());
-	            Seller seller = sellerOptional.orElseThrow(() -> new UsernameNotFoundException("Seller not found"));
+		// Check if the user is authenticated and of the right type
+		if (authentication != null && authentication.isAuthenticated()) {
+			Object principal = authentication.getPrincipal();
 
-	            // Now you can use the Seller object
-	            List<Order> orders=sellerDashboardService.getSellerOrders(seller.getId());
-	            return ResponseEntity.ok(orders);
-	        }
-	    }
-	    
-	    throw new AccessDeniedException("User not authenticated or not a seller.");
+			if (principal instanceof UserDetails) {
+				UserDetails userDetails = (UserDetails) principal;
+
+				// Assuming you have a way to fetch a Seller by username or other attributes
+				Optional<Seller> sellerOptional = sellerRepository.findByUsername(userDetails.getUsername());
+				Seller seller = sellerOptional.orElseThrow(() -> new UsernameNotFoundException("Seller not found"));
+
+				// Now you can use the Seller object
+				List<Order> orders = sellerDashboardService.getSellerOrders(seller.getId());
+				return ResponseEntity.ok(orders);
+			}
+		}
+
+		throw new AccessDeniedException("User not authenticated or not a seller.");
 	}
 
 	/**
@@ -130,9 +136,9 @@ public class SellerDashboardController {
 			Seller seller = sellerDashboardService.findSellerByUsername(username); // Assuming seller is logged in
 			sellerDashboardService.deleteProductBySeller(productId, seller.getId());
 			return ResponseEntity.ok("Product deleted successfully");
-	}
+		}
 		logger.info("Unauthorized access attempt.");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		
-}
+
 	}
+}

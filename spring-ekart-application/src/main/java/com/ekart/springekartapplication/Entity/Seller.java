@@ -1,5 +1,6 @@
 package com.ekart.springekartapplication.Entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -16,9 +17,16 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public class Seller extends User {
 
+	@Column(name="shopAddress")
 	private String shopAddress;
+	
+	@Column(name="shopName")
 	private String shopName;
+	
+	@Column(name="emailSeller")
 	private String emailSeller;
+	
+	@Column(name="phoneNumberSeller")
 	private String phoneNumberSeller;
 
 }

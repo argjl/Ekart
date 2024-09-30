@@ -3,12 +3,14 @@ package com.ekart.springekartapplication.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ekart.springekartapplication.DTO.ProductDTO;
 import com.ekart.springekartapplication.Entity.Order;
 import com.ekart.springekartapplication.Entity.Product;
 import com.ekart.springekartapplication.Entity.Seller;
 import com.ekart.springekartapplication.Exception.InvalidProductException;
 import com.ekart.springekartapplication.Exception.ProductNotFoundException;
 import com.ekart.springekartapplication.Exception.SellerNotFoundException;
+import com.ekart.springekartapplication.Mapper.ProductMapper;
 import com.ekart.springekartapplication.Repository.CartItemRepository;
 import com.ekart.springekartapplication.Repository.OrderRespository;
 import com.ekart.springekartapplication.Repository.ProductRepository;
@@ -16,6 +18,7 @@ import com.ekart.springekartapplication.Repository.SellerRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -27,15 +30,16 @@ public class SellerDashboardService {
 
 	@Autowired
 	private OrderRespository orderRepository;
-	
+
 	@Autowired
 	private SellerRepository sellerRepository;
-	
+
 	@Autowired
 	private CartItemRepository cartItemRepository;
 
-	public List<Product> getSellerProducts(Long sellerId) {
-		return productRepository.findBySellerId(sellerId);
+	public List<ProductDTO> getSellerProducts(Long sellerId) {
+		List<Product> products = productRepository.findBySellerId(sellerId);
+		return products.stream().map(ProductMapper::toDTO).collect(Collectors.toList());
 	}
 
 	// Add or Update product
@@ -80,15 +84,32 @@ public class SellerDashboardService {
 
 	}
 
-	 public Seller findSellerByUsername(String username) {
-	        Optional<Seller> sellerOptional = sellerRepository.findByUsername(username);
-	        
-	        // If not found, throw an exception
-	        if (!sellerOptional.isPresent()) {
-	            throw new SellerNotFoundException("Seller not found with username: " + username);
-	        }
+	public Seller findSellerByUsername(String username) {
+		Optional<Seller> sellerOptional = sellerRepository.findByUsername(username);
+		// Ensure that all fields are being fetched properly
+		Seller seller = sellerOptional
+				.orElseThrow(() -> new SellerNotFoundException("Seller not found with username: " + username));
 
-	        // Return the found seller
-	        return sellerOptional.get();
-	    }
+		// Verify that shop details are being fetched
+//		if (seller.getShopName() == null || seller.getShopAddress() == null || seller.getEmailSeller() == null
+//				|| seller.getPhoneNumberSeller() == null) {
+//			StringBuilder missingFields = new StringBuilder("Missing fields: ");
+//
+//			if (seller.getShopName() == null) {
+//				missingFields.append("shopName, ");
+//			}
+//			if (seller.getShopAddress() == null) {
+//				missingFields.append("shopAddress, ");
+//			}
+//			if (seller.getEmailSeller() == null) {
+//				missingFields.append("emailSeller, ");
+//			}
+//			if (seller.getPhoneNumberSeller() == null) {
+//				missingFields.append("phoneNumberSeller, ");
+//			}
+//			throw new IllegalStateException("Incomplete shop details: one or more fields are missing.");
+//		}
+
+		return seller;
+	}
 }

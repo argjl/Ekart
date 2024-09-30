@@ -12,9 +12,9 @@ INSERT INTO customers (id, address, emailCustomer, phoneNumberCustomer) VALUES
 (2, '456 Elm St', 'customer1@example.com', 9876543210);
 
 -- Inserting Sample Categories
-INSERT INTO category (categoryName) VALUES
-('Electronics'),
-('Clothing');
+INSERT INTO category (id,categoryName) VALUES
+(1,'Electronics'),
+(2,'Clothing');
 
 -- Inserting Sample Products
 INSERT INTO products (name, description, price, quantity, seller_id, category) VALUES
