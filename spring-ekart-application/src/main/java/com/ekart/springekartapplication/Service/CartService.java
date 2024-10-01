@@ -17,6 +17,7 @@ import com.ekart.springekartapplication.Repository.CartRepository;
 import com.ekart.springekartapplication.Repository.ProductRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class CartService {
 
 	@Autowired
 	private ProductRepository productRepository;
-	
+
 	@Autowired
 	private CartMapper cartMapper;
 
@@ -53,36 +54,57 @@ public class CartService {
 				return cartMapper.toDTO(cartRepository.save(cart));
 			}
 		}
-		
+
 		// If Product is not in the cart, add it
 		CartItem cartItem = new CartItem();
-			cartItem.setProduct(productOptional.get());
-			cartItem.setQuantity(quantity);
-			cartItem.setCart(cart);
-			cart.getItems().add(cartItem);
-		
+		cartItem.setProduct(productOptional.get());
+		cartItem.setQuantity(quantity);
+		cartItem.setCart(cart);
+		cart.getItems().add(cartItem);
 
 		// Save the Updated Cart
 		return cartMapper.toDTO(cartRepository.save(cart));
 	}
 
 	public CartDTO viewCart(Customer customer) {
-		Cart cart = cartRepository.findByCustomerId(customer.getId()).orElseThrow(()->new CartNotFoundException(customer.getId()));
-		 
-		 CartDTO cartDTO = new CartDTO();
-		 cartDTO.setId(cart.getId());
-		 List<CartItemDTO> itemDTOs = new ArrayList<>();
-		 
-		for (CartItem item : cart.getItems()) {
-	        CartItemDTO itemDTO = new CartItemDTO();
-	        itemDTO.setProductId(item.getProduct().getId());
-	        itemDTO.setProductName(item.getProduct().getName());
-	        itemDTO.setQuantity(item.getQuantity());
-	        itemDTOs.add(itemDTO);
-	    }
-	    cartDTO.setItems(itemDTOs);
+		Cart cart = cartRepository.findByCustomerId(customer.getId())
+				.orElseThrow(() -> new CartNotFoundException(customer.getId()));
 
-	    return cartDTO;
-		
+		CartDTO cartDTO = new CartDTO();
+		cartDTO.setId(cart.getId());
+		List<CartItemDTO> itemDTOs = new ArrayList<>();
+
+		for (CartItem item : cart.getItems()) {
+			CartItemDTO itemDTO = new CartItemDTO();
+			itemDTO.setProductId(item.getProduct().getId());
+			itemDTO.setProductName(item.getProduct().getName());
+			itemDTO.setQuantity(item.getQuantity());
+			itemDTOs.add(itemDTO);
+		}
+		cartDTO.setItems(itemDTOs);
+
+		return cartDTO;
+
+	}
+
+	public List<CartItemDTO> getItemsForCustomer(Long customerId) {
+		Optional<Cart> optionalCart = cartRepository.findByCustomerId(customerId);
+		if (optionalCart.isPresent()) {
+			Cart cart = optionalCart.get();
+			List<CartItemDTO> cartItemsDTO = new ArrayList<>();
+
+			// Convert CartItem to CartItemDTO
+			for (CartItem cartItem : cart.getItems()) {
+				CartItemDTO cartItemDTO = new CartItemDTO();
+				cartItemDTO.setProductId(cartItem.getProduct().getId());
+				cartItemDTO.setProductName(cartItem.getProduct().getName());
+				cartItemDTO.setQuantity(cartItem.getQuantity());
+				cartItemsDTO.add(cartItemDTO);
+			}
+
+			return cartItemsDTO; // Return the populated list of CartItemDTO
+		} else {
+			return Collections.emptyList(); // Return an empty list if no cart is found
+		}
 	}
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ekart.springekartapplication.DTO.CartDTO;
-import com.ekart.springekartapplication.Entity.Cart;
+import com.ekart.springekartapplication.DTO.CartResponse;
 import com.ekart.springekartapplication.Entity.Customer;
 import com.ekart.springekartapplication.Service.CartService;
 import com.ekart.springekartapplication.Service.CustomerService;
@@ -42,14 +42,16 @@ public class CartController {
 	}
 
 	@GetMapping("/view")
-	public ResponseEntity<CartDTO> viewCart(Authentication authentication) {
-		logger.info("CartController : viewCart Request Processing");
-		// Extract the username from the Authentication object
-		String username = authentication.getName();
-		// Fetch the Customer entity from the database using the username
-		Customer customer = customerService.findByUsername(username);
-		logger.info("CartController : viewCart Response Processing");
-		return ResponseEntity.ok(cartService.viewCart(customer));
+	public ResponseEntity<CartResponse> viewCart(Authentication authentication) {
+		String username = authentication.getName(); // Extract username from token
+		Customer customer = customerService.findByUsername(username); // Get customer details
+
+		CartResponse cartResponse = new CartResponse();
+		cartResponse.setId(customer.getId());
+		cartResponse.setUsername(username);
+		cartResponse.setItems(cartService.getItemsForCustomer(customer.getId()));
+
+		return ResponseEntity.ok(cartResponse);
 	}
 
 }

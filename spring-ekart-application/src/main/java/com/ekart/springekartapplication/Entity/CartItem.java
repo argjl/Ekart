@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Entity
@@ -29,7 +28,7 @@ public class CartItem {
 	@JoinColumn(name = "product_id")
 	@JsonIgnore
 	private Product product;
-	
+
 	private int quantity;
 
 	@ManyToOne
