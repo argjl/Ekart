@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ekart.springekartapplication.DTO.CartDTO;
 import com.ekart.springekartapplication.Entity.Cart;
 import com.ekart.springekartapplication.Entity.Customer;
 import com.ekart.springekartapplication.Service.CartService;
@@ -29,7 +30,7 @@ public class CartController {
 	private CustomerService customerService;
 
 	@PostMapping("/add")
-	public ResponseEntity<Cart> addProductToCart(@RequestParam Long productId, @RequestParam int quantity,
+	public ResponseEntity<CartDTO> addProductToCart(@RequestParam Long productId, @RequestParam int quantity,
 			Authentication authentication) {
 		logger.info("CartController : addProductToCart Request Processing ");
 		// Extract the username from the Authentication object
@@ -41,7 +42,7 @@ public class CartController {
 	}
 
 	@GetMapping("/view")
-	public ResponseEntity<Cart> viewCart(Authentication authentication) {
+	public ResponseEntity<CartDTO> viewCart(Authentication authentication) {
 		logger.info("CartController : viewCart Request Processing");
 		// Extract the username from the Authentication object
 		String username = authentication.getName();

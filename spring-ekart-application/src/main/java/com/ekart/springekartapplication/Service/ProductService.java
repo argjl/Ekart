@@ -2,6 +2,7 @@ package com.ekart.springekartapplication.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +127,7 @@ public class ProductService {
 
 	// Get All Products
 	public List<Product> getAllProducts() {
-		return productRepository.findAll();
+		return productRepository.findAll().stream().distinct().collect(Collectors.toList());
 	}
 
 	// Get Products by Seller ID

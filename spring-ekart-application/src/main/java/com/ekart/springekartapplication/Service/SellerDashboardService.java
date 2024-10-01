@@ -96,24 +96,24 @@ public class SellerDashboardService {
 				.orElseThrow(() -> new SellerNotFoundException("Seller not found with username: " + username));
 
 		// Verify that shop details are being fetched
-//		if (seller.getShopName() == null || seller.getShopAddress() == null || seller.getEmailSeller() == null
-//				|| seller.getPhoneNumberSeller() == null) {
-//			StringBuilder missingFields = new StringBuilder("Missing fields: ");
-//
-//			if (seller.getShopName() == null) {
-//				missingFields.append("shopName, ");
-//			}
-//			if (seller.getShopAddress() == null) {
-//				missingFields.append("shopAddress, ");
-//			}
-//			if (seller.getEmailSeller() == null) {
-//				missingFields.append("emailSeller, ");
-//			}
-//			if (seller.getPhoneNumberSeller() == null) {
-//				missingFields.append("phoneNumberSeller, ");
-//			}
-//			throw new IllegalStateException("Incomplete shop details: one or more fields are missing.");
-//		}
+		if (seller.getShopName() == null || seller.getShopAddress() == null || seller.getEmailSeller() == null
+				|| seller.getPhoneNumberSeller() == null) {
+			StringBuilder missingFields = new StringBuilder("Missing fields: ");
+
+			if (seller.getShopName() == null) {
+				missingFields.append("shopName, ");
+			}
+			if (seller.getShopAddress() == null) {
+				missingFields.append("shopAddress, ");
+			}
+			if (seller.getEmailSeller() == null) {
+				missingFields.append("emailSeller, ");
+			}
+			if (seller.getPhoneNumberSeller() == null) {
+				missingFields.append("phoneNumberSeller, ");
+			}
+			throw new IllegalStateException("Incomplete shop details: one or more fields are missing.");
+		}
 
 		return seller;
 	}

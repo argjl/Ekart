@@ -5,9 +5,10 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,19 +23,20 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public class Seller extends User {
 
-	@Column(name = "shop_Address")
+	@Column(name = "shopaddress")
 	private String shopAddress;
 
-	@Column(name = "shop_Name")
+	@Column(name = "shopname")
 	private String shopName;
 
-	@Column(name = "email_Seller")
+	@Column(name = "emailseller")
 	private String emailSeller;
 
-	@Column(name = "phone_Number_Seller")
+	@Column(name = "phonenumberseller")
 	private String phoneNumberSeller;
 
-	@OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
+	@JsonBackReference
 	private List<Product> products;
 
 }

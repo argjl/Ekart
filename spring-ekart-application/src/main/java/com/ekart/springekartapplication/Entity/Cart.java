@@ -31,10 +31,10 @@ public class Cart {
 
 	@OneToOne
 	@JoinColumn(name = "customer_id")
-	@JsonManagedReference
 	private Customer customer;
 
 	@OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<CartItem> items;
 
 }

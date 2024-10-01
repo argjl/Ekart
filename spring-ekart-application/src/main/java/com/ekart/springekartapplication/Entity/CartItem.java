@@ -8,6 +8,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +27,14 @@ public class CartItem {
 
 	@ManyToOne
 	@JoinColumn(name = "product_id")
+	@JsonIgnore
 	private Product product;
+	
 	private int quantity;
 
 	@ManyToOne
 	@JoinColumn(name = "cart_id")
+	@JsonBackReference
 	private Cart cart;
 
 }
