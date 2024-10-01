@@ -11,13 +11,15 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "cart_items")
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class CartItem {
 
 	@Id
@@ -35,5 +37,18 @@ public class CartItem {
 	@JoinColumn(name = "cart_id")
 	@JsonBackReference
 	private Cart cart;
+
+	public CartItem(Cart cart, Product product, int quantity) {
+		super();
+		this.product = product;
+		this.quantity = quantity;
+		this.cart = cart;
+	}
+
+	@Override
+	public String toString() {
+		return "CartItem{" + "productId=" + product.getId() + // Just use the product ID
+				", quantity=" + quantity + '}';
+	}
 
 }

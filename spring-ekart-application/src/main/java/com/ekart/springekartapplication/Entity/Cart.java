@@ -1,6 +1,7 @@
 package com.ekart.springekartapplication.Entity;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -37,4 +38,9 @@ public class Cart {
 	@JsonManagedReference
 	private List<CartItem> items;
 
+	@Override
+	public String toString() {
+		return "Cart{" + "items=" + items.stream().map(CartItem::getProduct).collect(Collectors.toList()) + // Just collect product IDs
+				'}';
+	}
 }

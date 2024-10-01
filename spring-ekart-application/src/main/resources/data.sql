@@ -28,8 +28,8 @@ INSERT INTO cart (id, customer_id) VALUES
 
 -- Inserting into CartItems Table
 INSERT INTO cart_items (id, product_id, quantity, cart_id) VALUES
-(1, 1, 1, 1),
-(2, 3, 2, 1);
+(1, 1, 1, 1);
+--(2, 3, 2, 1);
 
 -- Inserting into Order Table
 INSERT INTO orders (id, orderDate, price, customer_id) VALUES

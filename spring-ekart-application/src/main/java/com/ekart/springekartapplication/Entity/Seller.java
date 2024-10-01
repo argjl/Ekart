@@ -39,4 +39,9 @@ public class Seller extends User {
 	@JsonBackReference
 	private List<Product> products;
 
+	@Override
+	public String toString() {
+		return "Seller{" + "id=" + getId() + ", shopName='" + shopName + '\'' + ", shopAddress='" + shopAddress + '\''
+				+ ", emailSeller='" + emailSeller + '\'' + ", phoneNumberSeller='" + phoneNumberSeller + '\'' + '}';
+	}
 }

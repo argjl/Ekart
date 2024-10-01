@@ -36,4 +36,9 @@ public class Product {
 	@JoinColumn(name = "category")
 	private Category category;
 
+	@Override
+	public String toString() {
+		return "Product{" + "id=" + id + ", name='" + name + '\'' + ", description='" + description + '\'' + ", price="
+				+ price + ", quantity=" + quantity + ", sellerId=" + (seller != null ? seller.getId() : null) + '}';
+	}
 }
