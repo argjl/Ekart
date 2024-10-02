@@ -1,10 +1,12 @@
 package com.ekart.springekartapplication.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ekart.springekartapplication.DTO.OrderDTO;
 import com.ekart.springekartapplication.Entity.Customer;
 import com.ekart.springekartapplication.Entity.Order;
 import com.ekart.springekartapplication.Entity.Seller;
@@ -16,14 +18,32 @@ public class OrderService {
 
 	@Autowired
 	private OrderRespository orderRepository;
-	
-	public List<Order> getOrdersByCustomer(Customer customer) {
-		return orderRepository.findByCustomerId(customer.getId());
+
+	public List<OrderDTO> getOrdersByCustomer(Customer customer) {
+		List<Order> orders = orderRepository.findByCustomerId(customer.getId());
+		return orders.stream().map(order -> {
+			OrderDTO orderDTO = new OrderDTO();
+			orderDTO.setId(order.getId());
+			orderDTO.setOrderDate(order.getOrderDate());
+			orderDTO.setPrice(order.getPrice());
+			orderDTO.setSeller(order.getSeller());
+			orderDTO.setOrderItems(order.getOrderItems());
+			return orderDTO;
+		}).collect(Collectors.toList());
 	}
 
-	public Order getOrderById(Long orderId) {
-		return orderRepository.findById(orderId).orElseThrow(()->new OrderNotFoundException(orderId));
-		
+	public OrderDTO getOrderById(Long orderId) {
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+
+		OrderDTO orderDTO = new OrderDTO();
+		orderDTO.setId(order.getId());
+		orderDTO.setOrderDate(order.getOrderDate());
+		orderDTO.setPrice(order.getPrice());
+		orderDTO.setSeller(order.getSeller()); // Set seller details
+		orderDTO.setOrderItems(order.getOrderItems());
+
+		return orderDTO;
+
 	}
 
 	public List<Order> getOrdersBySeller(Seller seller) {

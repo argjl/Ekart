@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ekart.springekartapplication.DTO.OrderDTO;
 import com.ekart.springekartapplication.Entity.Customer;
 import com.ekart.springekartapplication.Entity.Order;
 import com.ekart.springekartapplication.Service.CustomerService;
@@ -29,7 +30,7 @@ public class OrderController {
 	CustomerService customerService;
 
 	@GetMapping("/vieworders")
-	public List<Order> getOrdersByCustomer(Authentication authentication) {
+	public List<OrderDTO> getOrdersByCustomer(Authentication authentication) {
 		logger.info("OrderController : getOrdersByCustomer Request Processing ");
 		String username = authentication.getName();
 		Customer customer = customerService.findByUsername(username);
@@ -38,7 +39,7 @@ public class OrderController {
 	}
 
 	@GetMapping("/{orderId}")
-	public Order getOrderDetails(@PathVariable Long orderId) {
+	public OrderDTO getOrderDetails(@PathVariable Long orderId) {
 		logger.info("OrderController : getOrdersByCustomer Request Processing ");
 		return orderService.getOrderById(orderId);
 	}

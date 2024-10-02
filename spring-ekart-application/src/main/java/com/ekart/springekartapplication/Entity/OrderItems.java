@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +32,7 @@ public class OrderItems {
 
 	@ManyToOne
 	@JoinColumn(name = "order_id")
+	@JsonBackReference
 	private Order order;
 
 }

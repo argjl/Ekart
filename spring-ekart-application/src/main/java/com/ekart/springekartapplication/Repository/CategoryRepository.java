@@ -10,4 +10,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long>{
 
 	ResponseEntity<?> save(CategoryDTO newCategory);
 
+	boolean existsByCategoryName(String categoryName);
+
 }

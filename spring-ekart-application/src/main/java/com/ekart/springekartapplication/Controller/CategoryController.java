@@ -2,11 +2,12 @@ package com.ekart.springekartapplication.Controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import com.ekart.springekartapplication.Service.CategoryService;
 @RequestMapping("/category")
 public class CategoryController {
 
-	Logger logger=LoggerFactory.getLogger(CategoryController.class);
+	Logger logger = LoggerFactory.getLogger(CategoryController.class);
 	@Autowired
 	private CategoryService categoryService;
 
@@ -32,7 +33,7 @@ public class CategoryController {
 	}
 
 	@PostMapping("/addCategory")
-	public ResponseEntity<?> addCategory(@Validated @RequestBody CategoryDTO categoryDTO) {
+	public ResponseEntity<?> addCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
 		logger.info("CategoryController:Add Category");
 		return categoryService.addCategory(categoryDTO);
 	}
