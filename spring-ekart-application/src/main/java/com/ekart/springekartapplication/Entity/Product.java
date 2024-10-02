@@ -34,6 +34,7 @@ public class Product {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "category")
+	@JsonManagedReference
 	private Category category;
 
 	@Override

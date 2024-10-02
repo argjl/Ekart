@@ -5,16 +5,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ekart.springekartapplication.Controller.SellerDashboardController;
 import com.ekart.springekartapplication.DTO.ProductDTO;
+import com.ekart.springekartapplication.Entity.Category;
 import com.ekart.springekartapplication.Entity.Order;
 import com.ekart.springekartapplication.Entity.Product;
 import com.ekart.springekartapplication.Entity.Seller;
+import com.ekart.springekartapplication.Exception.CategoryNotFoundException;
 import com.ekart.springekartapplication.Exception.InvalidProductException;
 import com.ekart.springekartapplication.Exception.ProductNotFoundException;
 import com.ekart.springekartapplication.Exception.SellerNotFoundException;
 import com.ekart.springekartapplication.Mapper.ProductMapper;
 import com.ekart.springekartapplication.Repository.CartItemRepository;
+import com.ekart.springekartapplication.Repository.CategoryRepository;
 import com.ekart.springekartapplication.Repository.OrderRespository;
 import com.ekart.springekartapplication.Repository.ProductRepository;
 import com.ekart.springekartapplication.Repository.SellerRepository;
@@ -42,15 +44,30 @@ public class SellerDashboardService {
 	@Autowired
 	private CartItemRepository cartItemRepository;
 
+	@Autowired
+	private CategoryRepository categoryRepository;
+
 	public List<ProductDTO> getSellerProducts(Long sellerId) {
 		List<Product> products = productRepository.findBySellerId(sellerId);
 		return products.stream().map(ProductMapper::toDTO).collect(Collectors.toList());
 	}
 
 	// Add or Update product
-	public Product addOrUpdateProduct(Product product) {
+	public Product addOrUpdateProduct(Product product, Seller seller) {
 		// Validate product
 		validateProduct(product);
+		logger.info("SellerDashboardService : addOrUpdateProduct Request from Controller {}", product);
+		validateSeller(seller);
+		if (product.getId() != null) {
+			Optional<Product> existingProduct = productRepository.findById(product.getId());
+			if (existingProduct.isPresent()) {
+				validateProductOwnership(existingProduct.get(), seller);
+			} else {
+				throw new ProductNotFoundException(product.getId());
+			}
+		}
+		product.setSeller(seller);
+		logger.info("SellerDashboardService : addOrUpdateProduct Response to Controller {}", product);
 		return productRepository.save(product);
 	}
 
@@ -74,19 +91,6 @@ public class SellerDashboardService {
 
 	public List<Order> getSellerOrders(Long sellerId) {
 		return orderRepository.findOrderBySellerId(sellerId);
-	}
-
-	private void validateProduct(Product product) {
-		if (product.getName() == null || product.getName().trim().isEmpty()) {
-			throw new InvalidProductException("Product Name Cannot be NULL or Empty");
-		}
-		if (product.getPrice() == null || product.getPrice() <= 0) {
-			throw new InvalidProductException("Product price must be a positive Value");
-		}
-		if (product.getQuantity() < 0) {
-			throw new InvalidProductException("Product Quantity cannnot be Negative");
-		}
-
 	}
 
 	public Seller findSellerByUsername(String username) {
@@ -116,5 +120,45 @@ public class SellerDashboardService {
 		}
 
 		return seller;
+	}
+
+	public Category findCategory(Long categoryId) {
+		Optional<Category> category = categoryRepository.findById(categoryId);
+		logger.info("SellerDashboardService : findCategory Category {}", category);
+		if (!category.isPresent()) {
+			throw new CategoryNotFoundException(categoryId);
+		}
+
+		return category.get();
+	}
+
+	private void validateProduct(Product product) {
+		if (product.getName() == null || product.getName().trim().isEmpty()) {
+			throw new InvalidProductException("Product Name Cannot be NULL or Empty");
+		}
+		if (product.getPrice() == null || product.getPrice() <= 0) {
+			throw new InvalidProductException("Product price must be a positive Value");
+		}
+		if (product.getQuantity() < 0) {
+			throw new InvalidProductException("Product Quantity cannnot be Negative");
+		}
+
+	}
+
+	private void validateSeller(Seller seller) {
+		if (seller == null || seller.getId() == null) {
+			throw new SellerNotFoundException("Seller not found");
+		}
+
+		Optional<Seller> existingSeller = sellerRepository.findById(seller.getId());
+		if (!existingSeller.isPresent()) {
+			throw new SellerNotFoundException("Seller with ID " + seller.getId() + " not found.");
+		}
+	}
+
+	private void validateProductOwnership(Product existingProduct, Seller seller) {
+		if (!existingProduct.getSeller().getId().equals(seller.getId())) {
+			throw new RuntimeException("Seller is not authorized to update this product");
+		}
 	}
 }

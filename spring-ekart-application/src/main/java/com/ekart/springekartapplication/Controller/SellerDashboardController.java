@@ -24,9 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ekart.springekartapplication.Entity.Product;
 import com.ekart.springekartapplication.Entity.Seller;
+import com.ekart.springekartapplication.Exception.CategoryNotFoundException;
+import com.ekart.springekartapplication.Exception.SellerNotFoundException;
+import com.ekart.springekartapplication.Mapper.CategoryMapper;
 import com.ekart.springekartapplication.Mapper.ProductMapper;
+import com.ekart.springekartapplication.Mapper.SellerMapper;
 import com.ekart.springekartapplication.Repository.SellerRepository;
 import com.ekart.springekartapplication.DTO.ProductDTO;
+import com.ekart.springekartapplication.Entity.Category;
 import com.ekart.springekartapplication.Entity.Order;
 import com.ekart.springekartapplication.Service.ProductService;
 import com.ekart.springekartapplication.Service.SellerDashboardService;
@@ -81,14 +86,30 @@ public class SellerDashboardController {
 	 * @return the added or updated product
 	 */
 	@PostMapping("/addOrUpdateProduct")
-	public ResponseEntity<ProductDTO> addOrUpdateProduct(@RequestBody ProductDTO productDTO,
+	public ResponseEntity<String> addOrUpdateProduct(@RequestBody ProductDTO productDTO,
 			Authentication authentication) {
-		Seller seller = (Seller) authentication.getPrincipal(); // Assuming seller is logged in
+		logger.info("SellerDashboardController : Entering addOrUpdateProduct");
+		String username = authentication.getName();
+		logger.info("SellerDashboardController : addOrUpdateProduct Request Sent {}", productDTO);
+		Seller seller = sellerDashboardService.findSellerByUsername(username); // Assuming seller is logged in
+		if (seller == null) {
+			throw new SellerNotFoundException(username);
+		}
+		Category category = sellerDashboardService.findCategory(productDTO.getCategory().getId());
+		if (category == null) {
+			throw new CategoryNotFoundException(productDTO.getCategory().getId());
+		}
+
+		productDTO.setSeller(SellerMapper.toDTO(seller));
+		productDTO.setCategory(CategoryMapper.toDTO(category));
 		Product product = ProductMapper.toEntity(productDTO);
 		product.setSeller(seller); // Set the seller as the owner of the product
-		Product savedProduct = sellerDashboardService.addOrUpdateProduct(product);
+		product.setCategory(category);
+		Product savedProduct = sellerDashboardService.addOrUpdateProduct(product, seller);
+		logger.info("SellerDashboardController : addOrUpdateProduct SavedProduct {}", savedProduct);
 		ProductDTO savedProductdto = ProductMapper.toDTO(savedProduct);
-		return ResponseEntity.ok(savedProductdto);
+		logger.info("SellerDashboardController : addOrUpdateProduct Response Sent {}", savedProductdto);
+		return ResponseEntity.ok("Product added/updated successfully");
 	}
 
 	/**
