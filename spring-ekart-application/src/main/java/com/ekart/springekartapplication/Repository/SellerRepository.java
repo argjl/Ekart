@@ -12,4 +12,6 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
 
 	public Optional<Seller> findByUsername(String username);
 
+	public boolean existsByUsername(String username);
+
 }

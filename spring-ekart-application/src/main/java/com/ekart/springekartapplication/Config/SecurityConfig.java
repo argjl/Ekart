@@ -24,9 +24,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
-		http.csrf().disable().authorizeRequests().antMatchers("/auth/login").permitAll().antMatchers("/products/**")
-				.permitAll().antMatchers("/seller/**").hasRole("SELLER").antMatchers("/customer/**").hasRole("CUSTOMER")
-				.anyRequest().authenticated().and().httpBasic();
+		http.csrf().disable().authorizeRequests().antMatchers("/h2-console/**").permitAll().antMatchers("/favicon.ico**").permitAll().antMatchers("/auth/login").permitAll().antMatchers("/products/**")
+				.permitAll().antMatchers("/api/users/**").permitAll().antMatchers("/seller/**").hasRole("SELLER").antMatchers("/customer/**").hasRole("CUSTOMER")
+				.anyRequest().authenticated().and().headers().frameOptions().disable() // To allow H2 console in frames
+		        .and().httpBasic();
 	}
 
 	protected void configure2(HttpSecurity http) throws Exception {
