@@ -1,8 +1,11 @@
 package com.ekart.springekartapplication.Mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.ekart.springekartapplication.DTO.CategoryDTO;
 import com.ekart.springekartapplication.Entity.Category;
 
+@Component
 public class CategoryMapper {
 	public static CategoryDTO toDTO(Category category) {
 		CategoryDTO dto = new CategoryDTO();

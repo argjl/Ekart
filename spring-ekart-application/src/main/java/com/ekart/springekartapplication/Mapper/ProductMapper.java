@@ -2,10 +2,12 @@ package com.ekart.springekartapplication.Mapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.ekart.springekartapplication.DTO.ProductDTO;
 import com.ekart.springekartapplication.Entity.Product;
 
+@Component
 public class ProductMapper {
 	static Logger logger = LoggerFactory.getLogger(ProductMapper.class);
 

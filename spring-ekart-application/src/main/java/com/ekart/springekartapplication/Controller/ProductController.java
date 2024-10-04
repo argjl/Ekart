@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ekart.springekartapplication.DTO.ProductDTO;
+import com.ekart.springekartapplication.DTO.ResponseDTO;
 import com.ekart.springekartapplication.Entity.Product;
 import com.ekart.springekartapplication.Service.ProductService;
+import com.google.gson.Gson;
 
 @RestController
 @RequestMapping("/product")
@@ -20,11 +23,22 @@ public class ProductController {
 
 	@Autowired
 	private ProductService productService;
+	
+	@Autowired
+	private Gson gson;
 
 	@PostMapping("/addProduct")
-	public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+	public ResponseEntity<String> addProduct(@RequestBody ProductDTO product) {
 		Product saveProduct = productService.addProduct(product);
-		return ResponseEntity.ok(saveProduct);
+		String jsonResponse = gson.toJson(new ResponseDTO<>("Product has been Added Succesfully", saveProduct));
+		return ResponseEntity.ok(jsonResponse);
+	}
+	
+	@PostMapping("/updateProduct")
+	public ResponseEntity<String> updateProduct(@RequestBody ProductDTO productDTO) {
+		Product saveProduct = productService.updateProduct(productDTO);
+		String jsonResponse = gson.toJson(new ResponseDTO<>("Product has been updated Succesfully", saveProduct));
+		return ResponseEntity.ok(jsonResponse);
 	}
 
 	@GetMapping("/search")

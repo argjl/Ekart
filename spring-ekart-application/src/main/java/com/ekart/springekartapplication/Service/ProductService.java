@@ -11,12 +11,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.ekart.springekartapplication.DTO.ProductDTO;
 import com.ekart.springekartapplication.Entity.Category;
 import com.ekart.springekartapplication.Entity.Product;
 import com.ekart.springekartapplication.Entity.Seller;
 import com.ekart.springekartapplication.Exception.InvalidProductException;
 import com.ekart.springekartapplication.Exception.ProductNotFoundException;
 import com.ekart.springekartapplication.Exception.SellerNotFoundException;
+import com.ekart.springekartapplication.Mapper.CategoryMapper;
+import com.ekart.springekartapplication.Mapper.ProductMapper;
+import com.ekart.springekartapplication.Mapper.SellerMapper;
 import com.ekart.springekartapplication.Repository.CategoryRepository;
 import com.ekart.springekartapplication.Repository.ProductRepository;
 import com.ekart.springekartapplication.Repository.SellerRepository;
@@ -35,9 +39,9 @@ public class ProductService {
 	@Autowired
 	private CategoryRepository categoryRepository;
 
-	public Product addProduct(Product product) {
+	public Product addProduct(ProductDTO productDTO) {
 		// Validate the Product Details
-		validateProduct(product);
+		validateProduct(productDTO);
 		logger.info("entered validate");
 
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -46,40 +50,41 @@ public class ProductService {
 		if (principal instanceof UserDetails) {
 			username = ((UserDetails) principal).getUsername();
 		} else {
-			username = principal.toString();}
+			username = principal.toString();
+		}
 
-			// Check if the seller exists
-			
-			// Save and return the Product
-		
+		// Check if the seller exists
+
+		// Save and return the Product
+
 		Optional<Seller> existingSeller = sellerRepository.findByUsername(username);// Assuming Seller is Logged in
 		logger.info(username);
-		logger.info(existingSeller.get().getId().toString());
+//		logger.info(existingSeller.get().getId().toString());
 		if (!existingSeller.isPresent()) {
-			throw new RuntimeException("Seller not found");
+			throw new RuntimeException("Seller not found"+ username);
 		}
 		Seller seller = existingSeller.get();
-		product.setSeller(seller);
+		productDTO.setSeller(SellerMapper.toDTO(seller));
 		logger.info("Product is added !");
-		logger.info(product.toString());
-		return productRepository.save(product);
+//		logger.info(productDTO.toString());
+		return productRepository.save(ProductMapper.toEntity(productDTO));
 	}
 
 	// Update an existing product
-	public Product updateProduct(Long productId, Product updatedProduct) {
+	public Product updateProduct(ProductDTO productDTO) {
 		// Validate the updated product details
-		validateProduct(updatedProduct);
+		validateProduct(productDTO);
 
 		// Check if the product exists
-		Product existingProduct = productRepository.findById(productId)
-				.orElseThrow(() -> new ProductNotFoundException(productId));
+		Product existingProduct = productRepository.findById(productDTO.getId())
+				.orElseThrow(() -> new ProductNotFoundException(productDTO.getId()));
 
 		// Update product fields
-		existingProduct.setName(updatedProduct.getName());
-		existingProduct.setDescription(updatedProduct.getDescription());
-		existingProduct.setPrice(updatedProduct.getPrice());
-		existingProduct.setQuantity(updatedProduct.getQuantity());
-		existingProduct.setCategory(updatedProduct.getCategory());
+		existingProduct.setName(productDTO.getName());
+		existingProduct.setDescription(productDTO.getDescription());
+		existingProduct.setPrice(productDTO.getPrice());
+		existingProduct.setQuantity(productDTO.getQuantity());
+		existingProduct.setCategory(CategoryMapper.toEntity(productDTO.getCategory()));
 
 		// Save and return the updated product
 		return productRepository.save(existingProduct);
@@ -142,11 +147,11 @@ public class ProductService {
 		if (products.isEmpty()) {
 			throw new ProductNotFoundException(sellerId);
 		}
-	
+
 		return products;
 	}
 
-	private void validateProduct(Product product) {
+	private void validateProduct(ProductDTO product) {
 		logger.info("entering Validate");
 		if (product.getName() == null || product.getName().trim().isEmpty()) {
 			throw new InvalidProductException("Product Name Cannot be NULL or Empty");

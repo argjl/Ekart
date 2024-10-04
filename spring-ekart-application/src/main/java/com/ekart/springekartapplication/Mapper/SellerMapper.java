@@ -1,8 +1,11 @@
 package com.ekart.springekartapplication.Mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.ekart.springekartapplication.DTO.SellerDTO;
 import com.ekart.springekartapplication.Entity.Seller;
 
+@Component
 public class SellerMapper extends UserMapper {
 	public static SellerDTO toDTO(Seller seller) {
 		SellerDTO dto = new SellerDTO();

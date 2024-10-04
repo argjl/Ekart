@@ -43,7 +43,7 @@ public class CartService {
 	@Transactional
 	public CartDTO addProductToCart(Customer customer, Long productId, int quantity) {
 		// Find the cart by customer ID
-		logger.info("Entering the CartService:AddProduct to Cart");
+		logger.info("Entering the CartService:AddProduct to Cart Processing the Request from the Controller");
 		Cart cart = cartRepository.findByCustomerId(customer.getId())
 				.orElseThrow(() -> new CartNotFoundException(customer.getId()));
 
@@ -67,35 +67,7 @@ public class CartService {
 
 		return cartMapper.toDTO(cart);
 
-//		Optional<Product> productOptional = productRepository.findById(productId);
-//		if (!productOptional.isPresent()) {
-//			throw new ProductNotFoundException(productId);
-//		}
-//
-//		// Check if the customer has an existing cart
-//		Cart cart = cartRepository.findByCustomerId(customer.getId()).orElse(new Cart()); // If no cart exists, create a
-//																							// new one
-//		cart.setCustomer(customer);
-//
-//		// Check if the product already exists in the cart
-//
-//		for (CartItem item : cart.getItems()) {
-//			if (item.getProduct().getId().equals(productId)) {
-//				item.setQuantity(item.getQuantity() + quantity); // Update the quantity
-//
-//				return cartMapper.toDTO(cartRepository.save(cart));
-//			}
-//		}
-//
-//		// If Product is not in the cart, add it
-//		CartItem cartItem = new CartItem();
-//		cartItem.setProduct(productOptional.get());
-//		cartItem.setQuantity(quantity);
-//		cartItem.setCart(cart);
-//		cart.getItems().add(cartItem);
-//
-//		// Save the Updated Cart
-//		return cartMapper.toDTO(cartRepository.save(cart));
+
 	}
 
 	public CartDTO viewCart(Customer customer) {
