@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ public class ProductService {
 	@Autowired
 	private SellerRepository sellerRepository;
 
+//	@Autowired
+//	private CartItemRepository cartItemRepository;
+
 	@Autowired
 	private CategoryRepository categoryRepository;
 
@@ -61,7 +66,7 @@ public class ProductService {
 		logger.info(username);
 //		logger.info(existingSeller.get().getId().toString());
 		if (!existingSeller.isPresent()) {
-			throw new RuntimeException("Seller not found"+ username);
+			throw new RuntimeException("Seller not found" + username);
 		}
 		Seller seller = existingSeller.get();
 		productDTO.setSeller(SellerMapper.toDTO(seller));
@@ -90,14 +95,19 @@ public class ProductService {
 		return productRepository.save(existingProduct);
 	}
 
-	// Delete a product
-	public void deleteProduct(Long productId) {
-		// Check if the product exists before deleting
-		if (!productRepository.existsById(productId)) {
-			throw new ProductNotFoundException(productId);
-		}
-		productRepository.deleteById(productId);
-	}
+//	// Delete a product
+//	@Transactional
+//	public List<Product> deleteProduct(Long productId) {
+//		// Check if the product exists before deleting
+//		if (!productRepository.existsById(productId)) {
+//			throw new ProductNotFoundException(productId);
+//		}
+//
+//		cartItemRepository.deleteByProductId(productId);
+//		productRepository.deleteById(productId);
+//		
+//		return productRepository.findAll();
+//	}
 
 	// Search products by name
 	public List<Product> searchProducts(String name) {

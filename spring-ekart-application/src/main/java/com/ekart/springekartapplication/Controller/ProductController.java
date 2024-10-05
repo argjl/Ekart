@@ -23,7 +23,7 @@ public class ProductController {
 
 	@Autowired
 	private ProductService productService;
-	
+
 	@Autowired
 	private Gson gson;
 
@@ -33,12 +33,19 @@ public class ProductController {
 		String jsonResponse = gson.toJson(new ResponseDTO<>("Product has been Added Succesfully", saveProduct));
 		return ResponseEntity.ok(jsonResponse);
 	}
-	
+
 	@PostMapping("/updateProduct")
 	public ResponseEntity<String> updateProduct(@RequestBody ProductDTO productDTO) {
 		Product saveProduct = productService.updateProduct(productDTO);
 		String jsonResponse = gson.toJson(new ResponseDTO<>("Product has been updated Succesfully", saveProduct));
 		return ResponseEntity.ok(jsonResponse);
+	}
+
+	@GetMapping("/view")
+	public ResponseEntity<List<Product>> getAllProducts() {
+		List<Product> products = productService.getAllProducts();
+		return ResponseEntity.ok(products);
+
 	}
 
 	@GetMapping("/search")
@@ -51,5 +58,11 @@ public class ProductController {
 			@RequestParam Long maximumPrice) {
 		return productService.filterProducts(categoryId, minimumPrice, maximumPrice);
 	}
+
+//	@DeleteMapping("/delete/{productId}")
+//	public ResponseEntity<List<Product>> deleteProducts(@PathVariable Long productId) {
+//		List<Product> updatedProducts=productService.deleteProduct(productId);
+//		return ResponseEntity.ok(updatedProducts);
+//	}
 
 }
