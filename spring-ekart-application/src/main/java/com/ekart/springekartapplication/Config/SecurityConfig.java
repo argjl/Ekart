@@ -8,10 +8,13 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.ekart.springekartapplication.Service.CustomUserDetailsService;
+import com.ekart.springekartapplication.UTIL.JwtRequestFilter;
 
 @SuppressWarnings("deprecation")
 @Configuration
@@ -20,20 +23,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private CustomUserDetailsService customUserDetailsService;
+	
+	@Autowired
+	private JwtRequestFilter jwtRequestFilter;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
-		http.csrf().disable().authorizeRequests().antMatchers("/h2-console/**").permitAll().antMatchers("/favicon.ico**").permitAll().antMatchers("/auth/login").permitAll().antMatchers("/products/**")
-				.permitAll().antMatchers("/api/users/**").permitAll().antMatchers("/seller/**").hasRole("SELLER").antMatchers("/customer/**").hasRole("CUSTOMER")
-				.anyRequest().authenticated().and().headers().frameOptions().disable() // To allow H2 console in frames
-		        .and().httpBasic();
-	}
-
-	protected void configure2(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeRequests().antMatchers("/auth/login").permitAll() // Allow access to the login
-																							// endpoint
-				.anyRequest().authenticated();
+		http.csrf().disable().authorizeRequests().antMatchers("/h2-console/**").permitAll()
+				.antMatchers("/favicon.ico**").permitAll()
+				.antMatchers("/auth/login").permitAll()
+				.antMatchers("/api/users/**").permitAll()
+				.antMatchers("/product/**").permitAll()
+				.antMatchers("/seller/**").hasRole("SELLER")
+				.antMatchers("/customer/**").hasRole("CUSTOMER")
+				.anyRequest().authenticated()
+				.and().headers().frameOptions().disable() // To allow H2 console in frames
+				.and().sessionManagement()
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 
 	@Override
