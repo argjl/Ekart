@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+	<Appenders>
+		<!-- Console Appender for local debugging -->
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} - %msg%n" />
+		</Console>
+
+		<!-- Splunk HTTP Event Collector Appender -->
+		<Socket name="SplunkHECAppender" protocol="https" host="127.0.0.1"
+			port="8088">
+			<JsonLayout complete="false" compact="true">
+				<KeyValuePair key="sourcetype" value="log4j" />
+				<KeyValuePair key="index" value="local-ekart" />
+				<KeyValuePair key="source" value="spring-ekart" />
+			</JsonLayout>
+			<Property name="Authorization">Splunk
+				4bcb94e0-ad73-46d7-b900-8ca2d094a61a</Property>
+		</Socket>
+	</Appenders>
+
+	<Loggers>
+		<!-- Optionally enable specific logger debug level for troubleshooting -->
+		<Logger name="com.splunk.logging" level="debug" additivity="false">
+			<AppenderRef ref="SplunkHECAppender" />
+		</Logger>
+
+		<!-- Root logger -->
+		<Root level="info">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="SplunkHECAppender" />
+		</Root>
+	</Loggers>
+</Configuration>

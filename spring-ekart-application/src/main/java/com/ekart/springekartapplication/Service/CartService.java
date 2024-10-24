@@ -2,8 +2,8 @@ package com.ekart.springekartapplication.Service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ekart.springekartapplication.DTO.CartDTO;
@@ -26,7 +26,7 @@ import java.util.Optional;
 
 @Service
 public class CartService {
-	Logger logger = LoggerFactory.getLogger(CartService.class);
+	Logger logger = LogManager.getLogger(CartService.class);
 
 	@Autowired
 	private CartRepository cartRepository;
@@ -38,12 +38,20 @@ public class CartService {
 	private CartMapper cartMapper;
 
 	@Autowired
+	private SplunkLoggingService splunkLoggingService;
+
+	@Autowired
 	private CartItemRepository cartItemRepository;
+
+	String logMessage;
 
 	@Transactional
 	public CartDTO addProductToCart(Customer customer, Long productId, int quantity) {
+
 		// Find the cart by customer ID
-		logger.info("Entering the CartService:AddProduct to Cart Processing the Request from the Controller");
+		logMessage = String
+				.format("Entering the CartService:AddProduct to Cart Processing the Request from the Controller");
+//		splunkLoggingService.sendLogToSplunk(logMessage);
 		Cart cart = cartRepository.findByCustomerId(customer.getId())
 				.orElseThrow(() -> new CartNotFoundException(customer.getId()));
 
@@ -67,10 +75,12 @@ public class CartService {
 
 		return cartMapper.toDTO(cart);
 
-
 	}
 
 	public CartDTO viewCart(Customer customer) {
+		logMessage = String
+				.format("Entering the CartService:viewCart to Cart Processing the Request from the Controller");
+//		splunkLoggingService.sendLogToSplunk(logMessage);
 		Cart cart = cartRepository.findByCustomerId(customer.getId())
 				.orElseThrow(() -> new CartNotFoundException(customer.getId()));
 
@@ -92,6 +102,9 @@ public class CartService {
 	}
 
 	public List<CartItemDTO> getItemsForCustomer(Long customerId) {
+		logMessage = String.format(
+				"Entering the CartService:getItemsForCustomer to Cart Processing the Request from the Controller");
+//		splunkLoggingService.sendLogToSplunk(logMessage);
 		Optional<Cart> optionalCart = cartRepository.findByCustomerId(customerId);
 		if (optionalCart.isPresent()) {
 			Cart cart = optionalCart.get();

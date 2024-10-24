@@ -1,7 +1,7 @@
 package com.ekart.springekartapplication.Service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +21,7 @@ import com.ekart.springekartapplication.Repository.UserRepository;
 @Service
 public class UserService {
 
-	Logger logger = LoggerFactory.getLogger(UserService.class);
+	Logger logger = LogManager.getLogger(UserService.class);
 
 	@Autowired
 	private UserRepository userRepository;

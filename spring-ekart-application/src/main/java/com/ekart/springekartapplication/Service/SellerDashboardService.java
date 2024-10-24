@@ -1,9 +1,11 @@
 package com.ekart.springekartapplication.Service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ekart.springekartapplication.DTO.ProductDTO;
 import com.ekart.springekartapplication.Entity.Category;
@@ -25,12 +27,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 @Service
 public class SellerDashboardService {
 
-	Logger logger = LoggerFactory.getLogger(SellerDashboardService.class);
+	Logger logger = LogManager.getLogger(SellerDashboardService.class);
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -47,16 +51,40 @@ public class SellerDashboardService {
 	@Autowired
 	private CategoryRepository categoryRepository;
 
+	@Autowired
+	private SplunkLoggingService splunkLoggingService;
+
 	public List<ProductDTO> getSellerProducts(Long sellerId) {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
+
+		logger.info("SellerDashboardService : getSellerProducts Request from Controller");
+		String requestBody = String.format("SellerDashboardService : Request for the Get All Products for the User %s",
+				sellerId);
+		splunkLoggingService.logRequestAndResponse(request, response, requestBody);
 		List<Product> products = productRepository.findBySellerId(sellerId);
+		String responseBody = String.format(
+				"SellerDashboardService : Response for the Get All Products for the User %s %s", sellerId,
+				products.stream().map(ProductMapper::toDTO).collect(Collectors.toList()));
+		splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 		return products.stream().map(ProductMapper::toDTO).collect(Collectors.toList());
 	}
 
 	// Add or Update product
 	public Product addOrUpdateProduct(Product product, Seller seller) {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
+
 		// Validate product
 		validateProduct(product);
 		logger.info("SellerDashboardService : addOrUpdateProduct Request from Controller {}", product);
+		String requestBody = String.format("SellerDashboardService : Request for the Add/Updates for the User %s %s",
+				seller.getUsername(), product.toString());
+		splunkLoggingService.logRequestAndResponse(request, response, requestBody);
 		validateSeller(seller);
 		if (product.getId() != null) {
 			Optional<Product> existingProduct = productRepository.findById(product.getId());
@@ -68,6 +96,9 @@ public class SellerDashboardService {
 		}
 		product.setSeller(seller);
 		logger.info("SellerDashboardService : addOrUpdateProduct Response to Controller {}", product);
+		String responseBody = String.format("SellerDashboardService : Response for the Add/Updates for the User %s %s",
+				seller.getUsername(), (productRepository.save(product)).toString());
+		splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 		return productRepository.save(product);
 	}
 
