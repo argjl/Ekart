@@ -4,14 +4,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ekart.springekartapplication.DTO.ProductDTO;
 import com.ekart.springekartapplication.Entity.Category;
@@ -30,7 +33,7 @@ import com.ekart.springekartapplication.Repository.SellerRepository;
 @Service
 public class ProductService {
 
-	Logger logger = LoggerFactory.getLogger(ProductService.class);
+	Logger logger = LogManager.getLogger(ProductService.class);
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -44,7 +47,15 @@ public class ProductService {
 	@Autowired
 	private CategoryRepository categoryRepository;
 
+	@Autowired
+	private SplunkLoggingService splunkLoggingService;
+
+	String logMessage;
+
 	public Product addProduct(ProductDTO productDTO) {
+
+		logMessage = String.format("ProductService : addProduct Request Products {}", productDTO);
+//		splunkLoggingService.sendLogToSplunk(logMessage);
 		// Validate the Product Details
 		validateProduct(productDTO);
 		logger.info("entered validate");
@@ -64,14 +75,15 @@ public class ProductService {
 
 		Optional<Seller> existingSeller = sellerRepository.findByUsername(username);// Assuming Seller is Logged in
 		logger.info(username);
-//		logger.info(existingSeller.get().getId().toString());
 		if (!existingSeller.isPresent()) {
 			throw new RuntimeException("Seller not found" + username);
 		}
 		Seller seller = existingSeller.get();
 		productDTO.setSeller(SellerMapper.toDTO(seller));
 		logger.info("Product is added !");
-//		logger.info(productDTO.toString());
+		productRepository.save(ProductMapper.toEntity(productDTO));
+		logMessage = String.format("ProductService : addProduct Response Products {}", productRepository);
+//		splunkLoggingService.sendLogToSplunk(logMessage);
 		return productRepository.save(ProductMapper.toEntity(productDTO));
 	}
 
@@ -111,6 +123,10 @@ public class ProductService {
 
 	// Search products by name
 	public List<Product> searchProducts(String name) {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
 		if (name == null || name.trim().isEmpty()) {
 			throw new InvalidProductException("Search Item Cannot Be Null or empty");
 		}
@@ -118,12 +134,17 @@ public class ProductService {
 		if (products.isEmpty()) {
 			throw new InvalidProductException("No Products found Matching the Search term: " + name);
 		}
+		String responseBody = String.format("Product Service : searchProducts Response Products with Name %s %s",name, products);
+        splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 		return products;
 	}
 
 	// Filter products by category and price range
 	public List<Product> filterProducts(Long categoryId, Long minPrice, Long maxPrice) {
-
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
 		if (categoryId == null) {
 			throw new InvalidProductException("Category ID cannot be Null");
 		}
@@ -137,16 +158,31 @@ public class ProductService {
 		if (products.isEmpty()) {
 			throw new InvalidProductException("No Products found for the Specified filter");
 		}
+		String responseBody = String.format("Product Service : filterProducts Response %s",products);
+        splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 		return products;
 	}
 
 	// Get All Products
 	public List<Product> getAllProducts() {
-		return productRepository.findAll().stream().distinct().collect(Collectors.toList());
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
+		
+		List<Product> allProducts = productRepository.findAll().stream().distinct().collect(Collectors.toList());
+		String responseBody = String.format("Product Service : getAllProducts Response %s",allProducts);
+        splunkLoggingService.logRequestAndResponse(request, response, responseBody);
+		return allProducts;
 	}
 
 	// Get Products by Seller ID
 	public List<Product> getProductsBySellerId(Long sellerId) {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
+
 		// Check if the seller exists
 		if (!sellerRepository.existsById(sellerId)) {
 			throw new SellerNotFoundException(sellerId);
@@ -157,7 +193,11 @@ public class ProductService {
 		if (products.isEmpty()) {
 			throw new ProductNotFoundException(sellerId);
 		}
+		String responseBody = String.format(
+				"Product Service : getProductsBySellerId Product Details for the User %s %s", sellerId,
+				products.toString());
 
+		splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 		return products;
 	}
 

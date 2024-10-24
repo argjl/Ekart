@@ -3,9 +3,13 @@ package com.ekart.springekartapplication.Service;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+//import java.util.UUID;
+//
+//import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,6 +17,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+//import org.springframework.web.context.request.RequestContextHolder;
+//import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ekart.springekartapplication.Entity.Customer; // Adjust the import based on your Customer entity
 import com.ekart.springekartapplication.Entity.Seller;
@@ -22,7 +28,7 @@ import com.ekart.springekartapplication.Repository.SellerRepository;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-	Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
+	Logger logger = LogManager.getLogger(CustomUserDetailsService.class);
 
 	@Autowired
 	private SellerRepository sellerRepository;
@@ -30,22 +36,30 @@ public class CustomUserDetailsService implements UserDetailsService {
 	@Autowired
 	private CustomerRepository customerRepository; // Assuming you have a CustomerRepository
 
+//	@Autowired
+//	private SplunkLoggingService splunkLoggingService;
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//	    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+//	    HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
+
 		// Check for Seller
 		Optional<Seller> sellerOptional = sellerRepository.findByUsername(username);
 		if (sellerOptional.isPresent()) {
 			Seller seller = sellerOptional.get();
-			logger.info("Seller found: {} with password: {}", username, seller.getPassword());
+			logger.info("Seller found: {}", username);
+//	        splunkLoggingService.logRequestAndResponse(request, response, "Seller found: " + username);
 			return new org.springframework.security.core.userdetails.User(seller.getUsername(), seller.getPassword(),
 					getAuthorities(seller));
 		}
 
 		// Check for Customer
-		Optional<Customer> customerOptional = customerRepository.findByUsername(username); // Adjust method as needed
+		Optional<Customer> customerOptional = customerRepository.findByUsername(username);
 		if (customerOptional.isPresent()) {
 			Customer customer = customerOptional.get();
-			logger.info("Customer found: {} with password: {}", username, customer.getPassword());
+			logger.info("Customer found: {}", username);
+//	        splunkLoggingService.logRequestAndResponse(request, response, "Customer found: " + username);
 			return new org.springframework.security.core.userdetails.User(customer.getUsername(),
 					customer.getPassword(), getAuthorities(customer));
 		}
@@ -55,30 +69,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 	}
 
 	private Collection<? extends GrantedAuthority> getAuthorities(Seller seller) {
-		return Collections.singleton(new SimpleGrantedAuthority("ROLE_SELLER")); // Seller role
+		return Collections.singleton(new SimpleGrantedAuthority("ROLE_SELLER"));
 	}
 
 	private Collection<? extends GrantedAuthority> getAuthorities(Customer customer) {
-		return Collections.singleton(new SimpleGrantedAuthority("ROLE_CUSTOMER")); // Customer role
+		return Collections.singleton(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
 	}
 }
-
-//@Service
-//public class CustomUserDetailsService implements UserDetailsService {
-//
-//    @Autowired
-//    private SellerRepository sellerRepository; // Or the appropriate repository
-//
-//    @Override
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//    	Optional<Seller> seller = sellerRepository.findByUsername(username); // Fetch seller by username
-//        if (seller == null) {
-//            throw new UsernameNotFoundException("User not found");
-//        }
-//        return new org.springframework.security.core.userdetails.User(seller.get().getUsername(), seller.get().getPassword(), getAuthorities(seller.get()));
-//    }
-//
-//    private Collection<? extends GrantedAuthority> getAuthorities(Seller seller) {
-//        return Collections.singleton(new SimpleGrantedAuthority("ROLE_SELLER")); // Add the role as needed
-//    }
-//}

@@ -2,8 +2,8 @@ package com.ekart.springekartapplication.Controller;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +21,7 @@ import com.ekart.springekartapplication.Service.OrderService;
 @RequestMapping("/orders")
 public class OrderController {
 
-	Logger logger = LoggerFactory.getLogger(OrderController.class);
+	Logger logger = LogManager.getLogger(OrderController.class);
 
 	@Autowired
 	private OrderService orderService;
