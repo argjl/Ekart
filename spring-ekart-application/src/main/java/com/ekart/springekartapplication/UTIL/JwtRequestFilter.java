@@ -1,7 +1,7 @@
 package com.ekart.springekartapplication.UTIL;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,6 +9,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.ekart.springekartapplication.Service.SplunkLoggingService;
+
+import io.jsonwebtoken.SignatureException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -21,13 +25,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-	Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
+	Logger logger = LogManager.getLogger(JwtRequestFilter.class);
 
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
 
 	@Autowired
 	private UserDetailsService userDetailsService;
+
+	@Autowired
+	private SplunkLoggingService splunkLoggingService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -40,21 +47,37 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
 			jwt = authorizationHeader.substring(7); // Remove "Bearer " prefix
-			username = jwtTokenUtil.extractUsername(jwt);
-			logger.info("Extracted Username from JWT: " + username);
+			try {
+				username = jwtTokenUtil.extractUsername(jwt);
+				logger.info("Extracted Username from JWT: " + username);
+			} catch (SignatureException e) {
+				logger.error("JWT signature does not match locally computed signature. Invalid JWT token.");
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT signature.");
+				String requestMethod = request.getMethod();
+				request.setAttribute("requestMethod", requestMethod);
+				String responseBody = String
+						.format("JWT signature does not match locally computed signature. Invalid JWT token. %s", jwt);
+				splunkLoggingService.logRequestAndResponse(request, response, responseBody);
+				return; // Stop further processing for this request
+			}
 		}
 
 		// If the token is valid and the user is not authenticated yet
 		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 			UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-			if (jwtTokenUtil.validateToken(jwt, userDetails)) {
-				UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
-				usernamePasswordAuthenticationToken
-						.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-				logger.info("Token validated successfully for user: " + username);
+			try {
+				if (jwtTokenUtil.validateToken(jwt, userDetails)) {
+					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+							userDetails, null, userDetails.getAuthorities());
+					usernamePasswordAuthenticationToken
+							.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+					logger.info("Token validated successfully for user: " + username);
+				}
+			} catch (SignatureException e) {
+				logger.error("JWT signature does not match locally computed signature. Invalid JWT token.");
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT signature.");
+				return; // Stop further processing for this request
 			}
 		}
 		chain.doFilter(request, response);

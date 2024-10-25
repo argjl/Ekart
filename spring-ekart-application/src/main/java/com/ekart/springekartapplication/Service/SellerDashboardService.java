@@ -19,7 +19,7 @@ import com.ekart.springekartapplication.Exception.SellerNotFoundException;
 import com.ekart.springekartapplication.Mapper.ProductMapper;
 import com.ekart.springekartapplication.Repository.CartItemRepository;
 import com.ekart.springekartapplication.Repository.CategoryRepository;
-import com.ekart.springekartapplication.Repository.OrderRespository;
+import com.ekart.springekartapplication.Repository.OrderRepository;
 import com.ekart.springekartapplication.Repository.ProductRepository;
 import com.ekart.springekartapplication.Repository.SellerRepository;
 
@@ -40,7 +40,7 @@ public class SellerDashboardService {
 	private ProductRepository productRepository;
 
 	@Autowired
-	private OrderRespository orderRepository;
+	private OrderRepository orderRepository;
 
 	@Autowired
 	private SellerRepository sellerRepository;
@@ -121,6 +121,14 @@ public class SellerDashboardService {
 	}
 
 	public List<Order> getSellerOrders(Long sellerId) {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getResponse();
+		String responseBody = String.format(
+				"SellerDashboardService : Response for the getSellerOrders for the User %s %s", sellerId,
+				(orderRepository.findOrderBySellerId(sellerId)).toString());
+		splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 		return orderRepository.findOrderBySellerId(sellerId);
 	}
 

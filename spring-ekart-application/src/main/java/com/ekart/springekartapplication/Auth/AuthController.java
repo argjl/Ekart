@@ -46,9 +46,12 @@ public class AuthController {
 			authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 		} catch (BadCredentialsException e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Set 401 when login fails
 			logger.error("Failed login attempt for user: {}", authRequest.getUsername());
 			splunkLoggingService.logRequestAndResponse(request, response, "Authentication failed: Invalid credentials");
-			throw new Exception("Incorrect Username and Password", e);
+			// Return 401 Unauthorized for invalid credentials
+			return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+					.body("Authentication failed: Invalid username or password.");
 		}
 
 		logger.info("Authentication successful for user: {}", authRequest.getUsername());

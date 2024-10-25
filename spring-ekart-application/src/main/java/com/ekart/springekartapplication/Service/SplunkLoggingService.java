@@ -133,7 +133,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
 
 @Service
 public class SplunkLoggingService {

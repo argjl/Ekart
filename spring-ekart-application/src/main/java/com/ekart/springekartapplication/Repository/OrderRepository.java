@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.ekart.springekartapplication.Entity.Order;
 
 @Repository
-public interface OrderRespository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
 	List<Order> findOrderBySellerId(Long sellerId);
 
 	List<Order> findByCustomerId(Long id);

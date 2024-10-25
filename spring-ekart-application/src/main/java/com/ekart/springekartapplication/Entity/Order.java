@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "orders")
@@ -44,6 +45,7 @@ public class Order {
 
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
 	@JsonManagedReference
+	@ToString.Exclude  // Prevent recursion
 	private List<OrderItems> orderItems;
 
 }

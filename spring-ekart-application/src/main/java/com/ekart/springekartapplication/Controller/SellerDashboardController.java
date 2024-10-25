@@ -58,7 +58,7 @@ public class SellerDashboardController {
 	@Autowired
 	private SplunkLoggingService splunkLoggingService;
 
-	String logMessage;
+	String requestMethod;
 
 	/**
 	 * Get all products added by the seller
@@ -67,28 +67,32 @@ public class SellerDashboardController {
 	 * @return the list of products added by the seller
 	 */
 	@GetMapping("/products")
-    public ResponseEntity<List<ProductDTO>> getSellerProducts(HttpServletRequest request, HttpServletResponse response) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = authentication.getPrincipal();
+	public ResponseEntity<List<ProductDTO>> getSellerProducts(HttpServletRequest request,
+			HttpServletResponse response) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
 
-        if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-            Seller seller = sellerDashboardService.findSellerByUsername(username);
+		if (principal instanceof UserDetails) {
+			String username = ((UserDetails) principal).getUsername();
+			Seller seller = sellerDashboardService.findSellerByUsername(username);
 
-            List<Product> products = productService.getProductsBySellerId(seller.getId());
-            List<ProductDTO> productdtos = products.stream().map(ProductMapper::toDTO).collect(Collectors.toList());
+			List<Product> products = productService.getProductsBySellerId(seller.getId());
+			List<ProductDTO> productdtos = products.stream().map(ProductMapper::toDTO).collect(Collectors.toList());
 
-            // Log request and response details
-            String responseBody = String.format("SellerDashboardController : Product Details for the User %s %s",username, productdtos.toString());
-            
-            splunkLoggingService.logRequestAndResponse(request, response, responseBody);
+			// Log request and response details
+			String responseBody = String.format("SellerDashboardController : Product Details for the User %s %s",
+					username, productdtos.toString());
+			response.setStatus(HttpStatus.OK.value());
+			splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 
-            return ResponseEntity.ok(productdtos);
-        }
-        logger.error("Unauthorized access attempt");
-        splunkLoggingService.logRequestAndResponse(request, response, "Unauthorized access attempt");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+			return ResponseEntity.ok(productdtos);
+		}
+		logger.error("Unauthorized access attempt");
+		response.setStatus(HttpStatus.UNAUTHORIZED.value());
+		splunkLoggingService.logRequestAndResponse(request, response, "Unauthorized access attempt");
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	}
+
 	/**
 	 * Add or update a product for the seller
 	 *
@@ -97,8 +101,8 @@ public class SellerDashboardController {
 	 * @return the added or updated product
 	 */
 	@PostMapping("/addOrUpdateProduct")
-	public ResponseEntity<String> addOrUpdateProduct(@RequestBody ProductDTO productDTO,
-			Authentication authentication,HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<String> addOrUpdateProduct(@RequestBody ProductDTO productDTO, Authentication authentication,
+			HttpServletRequest request, HttpServletResponse response) {
 		logger.info("SellerDashboardController : Entering addOrUpdateProduct");
 		String username = authentication.getName();
 		logger.info("SellerDashboardController : addOrUpdateProduct Request Sent {}", productDTO);
@@ -120,9 +124,11 @@ public class SellerDashboardController {
 		logger.info("SellerDashboardController : addOrUpdateProduct SavedProduct {}", savedProduct);
 		ProductDTO savedProductdto = ProductMapper.toDTO(savedProduct);
 		logger.info("SellerDashboardController : addOrUpdateProduct Response Sent {}", savedProductdto);
-		String responseBody = String.format("SellerDashboardController : Product has been added/updated under the User %s %s",username, savedProductdto.toString());
-        
-        splunkLoggingService.logRequestAndResponse(request, response, responseBody);
+		String responseBody = String.format(
+				"SellerDashboardController : Product has been added/updated under the User %s %s", username,
+				savedProductdto.toString());
+		response.setStatus(HttpStatus.OK.value());
+		splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 		return ResponseEntity.ok("Product added/updated successfully");
 	}
 
@@ -133,7 +139,7 @@ public class SellerDashboardController {
 	 * @return the list of orders for the seller
 	 */
 	@GetMapping("/orders")
-	public ResponseEntity<List<Order>> getSellerOrders() {
+	public ResponseEntity<?> getSellerOrders(HttpServletRequest request, HttpServletResponse response) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		// Check if the user is authenticated and of the right type
@@ -149,11 +155,30 @@ public class SellerDashboardController {
 
 				// Now you can use the Seller object
 				List<Order> orders = sellerDashboardService.getSellerOrders(seller.getId());
+				// Capture request method and URI
+				requestMethod = request.getMethod();
+				// Set the request method in the request attributes for later use
+				request.setAttribute("requestMethod", requestMethod);
+				response.setStatus(HttpStatus.OK.value());
+
+				if (orders.isEmpty()) {
+					// If the order list is empty, return a specific message
+					String responseBody = String.format("No orders for seller with id:  %s", seller.getId());
+					splunkLoggingService.logRequestAndResponse(request, response, responseBody);
+					return ResponseEntity.ok("No orders for seller with id: " + seller.getId());
+				}
+				String responseBody = String.format("Seller Dashboard Controller :getSellerOrders %s", orders);
+				splunkLoggingService.logRequestAndResponse(request, response, responseBody);
 				return ResponseEntity.ok(orders);
 			}
 		}
+		requestMethod = request.getMethod();
+		request.setAttribute("requestMethod", requestMethod);
+		response.setStatus(HttpStatus.UNAUTHORIZED.value());
+		String responseBody = String.format("User not authenticated or not a seller.");
+		splunkLoggingService.logRequestAndResponse(request, response, responseBody);
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-		throw new AccessDeniedException("User not authenticated or not a seller.");
 	}
 
 	/**

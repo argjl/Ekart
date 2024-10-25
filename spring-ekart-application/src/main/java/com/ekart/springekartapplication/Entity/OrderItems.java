@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "order_items")
@@ -33,6 +34,7 @@ public class OrderItems {
 	@ManyToOne
 	@JoinColumn(name = "order_id")
 	@JsonBackReference
+	@ToString.Exclude  // Prevent recursion
 	private Order order;
 
 }

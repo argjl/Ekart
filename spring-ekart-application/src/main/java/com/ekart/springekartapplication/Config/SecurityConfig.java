@@ -26,23 +26,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private JwtRequestFilter jwtRequestFilter;
+	
+	@Autowired
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+	
 
 	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/h2-console/**").permitAll()
+            .antMatchers("/favicon.ico**").permitAll()
+            .antMatchers("/auth/login").permitAll()
+            .antMatchers("/error").permitAll()
+            .antMatchers("/api/users/**").permitAll()
+            .antMatchers("/product/**").permitAll()
+            .antMatchers("/seller/**").hasRole("SELLER")
+            .antMatchers("/customer/**").hasRole("CUSTOMER")
+            .anyRequest().authenticated()
+            .and().exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler())  // Register custom handler here
+            .authenticationEntryPoint(authenticationEntryPoint)
+            .and().headers().frameOptions().disable()  // To allow H2 console in frames
+            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-		http.csrf().disable().authorizeRequests().antMatchers("/h2-console/**").permitAll()
-				.antMatchers("/favicon.ico**").permitAll()
-				.antMatchers("/auth/login").permitAll()
-				.antMatchers("/api/users/**").permitAll()
-				.antMatchers("/product/**").permitAll()
-				.antMatchers("/seller/**").hasRole("SELLER")
-				.antMatchers("/customer/**").hasRole("CUSTOMER")
-				.anyRequest().authenticated()
-				.and().headers().frameOptions().disable() // To allow H2 console in frames
-				.and().sessionManagement()
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-	}
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    }
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
